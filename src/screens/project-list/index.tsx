@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { cleanObject, useDebounce, useMount } from "utils";
 import { useHttp } from "utils/http";
 import styled from "@emotion/styled";
+import { Typography } from "antd";
 
 export const ProjectListScreen = () => {
   const [users, setUsers] = useState([]);
@@ -19,8 +20,19 @@ export const ProjectListScreen = () => {
 
   const client = useHttp();
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [error, setError] = useState<null | Error>(null);
+
   useEffect(() => {
-    client("projects", { data: cleanObject(debounceParam) }).then(setList);
+    setIsLoading(true);
+    client("projects", { data: cleanObject(debounceParam) })
+      .then(setList)
+      .catch((error) => {
+        setError(error);
+        setList([]);
+      })
+      .finally(() => setIsLoading(false));
   }, [debounceParam]);
 
   useMount(() => {
@@ -35,7 +47,10 @@ export const ProjectListScreen = () => {
         param={param}
         setParam={setParam}
       ></SearchPanel>
-      <List users={users} list={list}></List>
+      {error ? (
+        <Typography.Text type={"danger"}>{error.message}</Typography.Text>
+      ) : null}
+      <List loading={isLoading} users={users} dataSource={list}></List>
     </Container>
   );
 };
