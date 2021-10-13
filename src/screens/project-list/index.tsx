@@ -1,56 +1,46 @@
 import { List } from "./list";
 import { SearchPanel } from "./search-panel";
-import { useState, useEffect } from "react";
-import { cleanObject, useDebounce, useMount } from "utils";
-import { useHttp } from "utils/http";
+import { useState } from "react";
+import { useDebounce } from "utils";
 import styled from "@emotion/styled";
 import { Typography } from "antd";
+import { useProjects } from "./project";
+import { useUsers } from "./user";
 
 export const ProjectListScreen = () => {
-  const [users, setUsers] = useState([]);
-
   const [param, setParam] = useState({
     name: "",
     personId: "",
   });
 
-  const [list, setList] = useState([]);
+  // const [list, setList] = useState([]);
 
   const debounceParam = useDebounce(param, 200);
 
-  const client = useHttp();
+  const { isLoading, error, data: list } = useProjects(debounceParam);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: users } = useUsers();
 
-  const [error, setError] = useState<null | Error>(null);
+  // const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    setIsLoading(true);
-    client("projects", { data: cleanObject(debounceParam) })
-      .then(setList)
-      .catch((error) => {
-        setError(error);
-        setList([]);
-      })
-      .finally(() => setIsLoading(false));
-  }, [debounceParam]);
-
-  useMount(() => {
-    client("users").then(setUsers);
-  });
+  // const [error, setError] = useState<null | Error>(null);
 
   return (
     <Container>
       <h1>项目列表</h1>
       <SearchPanel
-        users={users}
+        users={users || []}
         param={param}
         setParam={setParam}
       ></SearchPanel>
       {error ? (
         <Typography.Text type={"danger"}>{error.message}</Typography.Text>
       ) : null}
-      <List loading={isLoading} users={users} dataSource={list}></List>
+      <List
+        loading={isLoading}
+        users={users || []}
+        dataSource={list || []}
+      ></List>
     </Container>
   );
 };
