@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useMountRef } from "utils"
 
 interface State<D> {
@@ -22,21 +22,21 @@ export const useAsync = <D>(initialState?: State<D>) => {
     const [retry, setRetry] = useState(() => ()=> {
     })
 
-    const setData = (data: D) => setState({
+    const setData = useCallback((data: D) => setState({
         data,
         stat: 'success',
         error: null
-    })
+    }), [])
 
-    const setError = (error: Error) => setState({
+    const setError = useCallback((error: Error) => setState({
         error,
         stat: 'error',
         data: null
-    })
+    }), [])
 
     const mountedRef = useMountRef();
 
-    const run = (promise: Promise<D>, runConfig?: { retry: () => Promise<D> }) => {
+    const run = useCallback((promise: Promise<D>, runConfig?: { retry: () => Promise<D> }) => {
         if(!promise || !promise.then) {
             throw new Error('please input promise');
         }
@@ -45,7 +45,7 @@ export const useAsync = <D>(initialState?: State<D>) => {
                 run(runConfig?.retry(), runConfig);
             }
         })
-        setState({ ...state, stat: "loading" });
+        setState(prevState => ({ ...state, stat: "loading" }));
         return promise
             .then(data => {
                 if(mountedRef.current) setData(data);
@@ -54,7 +54,7 @@ export const useAsync = <D>(initialState?: State<D>) => {
                 setError(err);
                 return err;
             })
-    }
+    }, [mountedRef, setData, state, setError])
 
     return {
         isIdle: state.stat === 'idle',
