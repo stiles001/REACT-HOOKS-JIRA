@@ -2,6 +2,7 @@ import { useAuth } from "context/auth-context";
 import { Form, Input } from "antd";
 import { LongButton } from "unauthenticated-app";
 import { useAsync } from "utils/use-async";
+import { useDispatch } from "react-redux";
 
 export const LoginScreen = ({
   onError,
@@ -10,9 +11,11 @@ export const LoginScreen = ({
 }) => {
   const { login } = useAuth();
   const { run, isLoading } = useAsync();
+  const dispatch = useDispatch();
 
   const handleSubmit = (value: { username: string; password: string }) => {
-    run(login(value).catch(onError));
+    // run(login(value).catch(onError));
+    dispatch(login(value));
   };
 
   return (
