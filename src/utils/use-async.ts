@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useReducer, useState } from "react"
 import { useMountRef } from "utils"
 
 interface State<D> {
@@ -9,32 +9,40 @@ interface State<D> {
 
 const defaultInitialState: State<null> = {
     stat: 'idle',
-    data: null,
+    data: null, 
     error: null
 }
 
+const useSafeDispatch = <T>(dispath: (...args: T[]) => void) => {
+    const mountedRef = useMountRef();
+
+    return useCallback((...args:T[]) => (mountedRef.current ? dispath(...args) : void 0), [dispath, mountedRef])
+} 
+
 export const useAsync = <D>(initialState?: State<D>) => {
-    const [state, setState] = useState<State<D>>({
+    const [state, dispatch] = useReducer((state: State<D>, action:Partial<State<D>>) => ({ ...state, ...action }) ,{
         ...defaultInitialState,
         ...initialState
     })
 
+    const safeDiaptch = useSafeDispatch(dispatch)
+
     const [retry, setRetry] = useState(() => ()=> {
     })
 
-    const setData = (data: D) => setState({
+    const setData = (data: D) => safeDiaptch({
         data,
         stat: 'success',
         error: null
     })
 
-    const setError = (error: Error) => setState({
+    const setError = (error: Error) => safeDiaptch({
         error,
         stat: 'error',
         data: null
     })
 
-    const mountedRef = useMountRef();
+    
 
     const run = (promise: Promise<D>, runConfig?: { retry: () => Promise<D> }) => {
         if(!promise || !promise.then) {
@@ -45,10 +53,10 @@ export const useAsync = <D>(initialState?: State<D>) => {
                 run(runConfig?.retry(), runConfig);
             }
         })
-        setState({ ...state, stat: "loading" });
+        safeDiaptch({ stat: "loading" });
         return promise
             .then(data => {
-                if(mountedRef.current) setData(data);
+                setData(data);
                 return data
             }).catch(err => {
                 setError(err);
