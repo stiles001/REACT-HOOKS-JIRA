@@ -1,5 +1,5 @@
 import { User } from "./search-panel";
-import { Table, TableProps } from "antd";
+import { Button, Dropdown, Table, TableProps, Menu } from "antd";
 import { Link } from "react-router-dom";
 import { Pin } from "components/pin";
 import { useEditProject } from "./project";
@@ -17,6 +17,7 @@ export interface Project {
 interface ListProps extends TableProps<Project> {
   users: User[];
   refresh?: () => void;
+  setProjectModalOpen: (isOpen: boolean) => void;
 }
 
 export const List = ({ users, ...props }: ListProps) => {
@@ -64,6 +65,30 @@ export const List = ({ users, ...props }: ListProps) => {
         {
           title: "创建时间",
           dataIndex: "created",
+        },
+        {
+          render(value, project) {
+            return (
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item key="edit">
+                      <Button
+                        type={"link"}
+                        onClick={() => props.setProjectModalOpen(true)}
+                      >
+                        编辑
+                      </Button>
+                    </Menu.Item>
+                  </Menu>
+                }
+              >
+                <Button style={{ padding: 0 }} type={"link"}>
+                  ...
+                </Button>
+              </Dropdown>
+            );
+          },
         },
       ]}
       {...props}
