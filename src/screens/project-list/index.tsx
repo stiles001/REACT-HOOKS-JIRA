@@ -20,7 +20,7 @@ export const ProjectListScreen = (props: {
 
   const debounceParam = useDebounce(param, 200);
 
-  const { isLoading, error, data: list, retry } = useProjects(debounceParam);
+  const { isLoading, error, data: list } = useProjects(debounceParam);
 
   const { data: users } = useUsers();
 
@@ -46,7 +46,6 @@ export const ProjectListScreen = (props: {
       ) : null}
       <List
         setProjectModalOpen={props.setProjectModalOpen}
-        refresh={retry}
         loading={isLoading}
         users={users || []}
         dataSource={list || []}

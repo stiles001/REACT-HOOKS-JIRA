@@ -16,14 +16,12 @@ export interface Project {
 
 interface ListProps extends TableProps<Project> {
   users: User[];
-  refresh?: () => void;
   setProjectModalOpen: (isOpen: boolean) => void;
 }
 
 export const List = ({ users, ...props }: ListProps) => {
   const { mutate } = useEditProject();
-  const pinProject = (id: number) => (pin: boolean) =>
-    mutate({ id, pin }).then(props.refresh);
+  const pinProject = (id: number) => (pin: boolean) => mutate({ id, pin });
   return (
     <Table
       pagination={false}

@@ -1,53 +1,33 @@
-import { useEffect } from "react";
-import { cleanObject } from "utils";
 import { useHttp } from "utils/http";
-import { useAsync } from "utils/use-async";
 import { Project } from "./list";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 
 export const useProjects = (param?: Partial<Project>) => {
     const client = useHttp();
-    const { run, ...result } = useAsync<Project[]>();
 
-// const [isLoading, setIsLoading] = useState(false);
-
-// const [error, setError] = useState<null | Error>(null);
-
-    const fetchProject = () => client("projects", { data: cleanObject(param || {}) });
-    useEffect(() => {
-        run(fetchProject(), {
-            retry: fetchProject
-        })
-    }, [param]);
-
-    return result;
+    return useQuery<Project[], Error>(['projects', param], () => client("projects", { data: param }));
 }
 
 export const useEditProject = () => {
-    const { run, ...asyncResult } = useAsync();
     const client = useHttp();
-    const mutate = (params: Partial<Project>) => {
-        return run(client(`projects/${params.id}`, {
-            data: params,
-            method: 'PATCH'
-        }))
-    }
-    return {
-        mutate,
-        ...asyncResult
-    }
+    const queryClient = useQueryClient();
+
+    return useMutation((params: Partial<Project>) => client(`projects/${params.id}`, {
+        method: 'PATCH',
+        data: params
+    }), {
+        onSuccess: () => queryClient.invalidateQueries('projects')
+    });
 }
 
 export const useAddProject = () => {
-    const { run, ...asyncResult } = useAsync();
     const client = useHttp();
-    const mutate = (params: Partial<Project>) => {
-        return run(client(`projects/${params.id}`, {
-            data: params,
-            method: 'POST'
-        }))
-    }
-    return {
-        mutate,
-        ...asyncResult
-    }
+    const queryClient = useQueryClient();
+
+    return useMutation((params: Partial<Project>) => client(`projects/${params.id}`, {
+        data: params,
+        method: 'POST'
+    }),{
+        onSuccess: () => queryClient.invalidateQueries('projects')
+    });
 }
