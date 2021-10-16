@@ -7,10 +7,10 @@ import { Button, Typography } from "antd";
 import { useProjects } from "./project";
 import { useUsers } from "./user";
 import { Row } from "components/lib";
+import { useDispatch } from "react-redux";
+import { projectListActions } from "./project-list.slice";
 
-export const ProjectListScreen = (props: {
-  setProjectModalOpen: (isOpen: boolean) => void;
-}) => {
+export const ProjectListScreen = () => {
   const [param, setParam] = useState({
     name: "",
     personId: "",
@@ -24,6 +24,8 @@ export const ProjectListScreen = (props: {
 
   const { data: users } = useUsers();
 
+  const dispatch = useDispatch();
+
   // const [isLoading, setIsLoading] = useState(false);
 
   // const [error, setError] = useState<null | Error>(null);
@@ -32,7 +34,7 @@ export const ProjectListScreen = (props: {
     <Container>
       <Row between={true}>
         <h1>项目列表</h1>
-        <Button onClick={() => props.setProjectModalOpen(true)}>
+        <Button onClick={() => dispatch(projectListActions.openProjectModal())}>
           创建项目
         </Button>
       </Row>
@@ -45,7 +47,6 @@ export const ProjectListScreen = (props: {
         <Typography.Text type={"danger"}>{error.message}</Typography.Text>
       ) : null}
       <List
-        setProjectModalOpen={props.setProjectModalOpen}
         refresh={retry}
         loading={isLoading}
         users={users || []}
