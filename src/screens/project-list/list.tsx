@@ -78,6 +78,14 @@ export const List = ({ users, ...props }: ListProps) => {
                         编辑
                       </Button>
                     </Menu.Item>
+                    <Menu.Item key="delete">
+                      <Button
+                        type={"link"}
+                        onClick={() => props.setProjectModalOpen(true)}
+                      >
+                        删除
+                      </Button>
+                    </Menu.Item>
                   </Menu>
                 }
               >
